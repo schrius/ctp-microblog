@@ -11,27 +11,32 @@ module.exports = {
     router.get('/new', Redirect.ifNotLoggedIn('/login'), this.new);
     router.post('/', Redirect.ifNotLoggedIn('/login'), this.create);
     router.get('/:username/:slug', this.show);
-    router.get('/:username/:slug/edit',
-                Redirect.ifNotLoggedIn('/login'),
-                Redirect.ifNotAuthorized('/posts'),
-                this.edit
-              );
-    router.put('/:username/:slug',
-                Redirect.ifNotLoggedIn('/login'),
-                Redirect.ifNotAuthorized('/posts'),
-                this.update
-              );
-    router.delete('/:username/:slug',
-                   Redirect.ifNotLoggedIn('/login'),
-                   Redirect.ifNotAuthorized('/posts'),
-                   this.delete
-                  );
+    router.get(
+      '/:username/:slug/edit',
+      Redirect.ifNotLoggedIn('/login'),
+      Redirect.ifNotAuthorized('/posts'),
+      this.edit,
+    );
+    router.put(
+      '/:username/:slug',
+      Redirect.ifNotLoggedIn('/login'),
+      Redirect.ifNotAuthorized('/posts'),
+      this.update,
+    );
+    router.delete(
+      '/:username/:slug',
+      Redirect.ifNotLoggedIn('/login'),
+      Redirect.ifNotAuthorized('/posts'),
+      this.delete,
+    );
 
     return router;
   },
   index(req, res) {
     models.Post.findAll({
-      include: [{model: models.User}]
+      include: [{
+        model: models.User,
+      }],
     }).then((allPosts) => {
       res.render('posts', { allPosts });
     });
@@ -78,24 +83,34 @@ module.exports = {
         },
       }],
     }).then((post) => {
-      (post ? res.render('posts/single', { post, user: post.user }) : res.redirect('/posts'))
+      if (post) {
+        res.render('posts/single', { post, user: post.user });
+      } else {
+        res.redirect('/posts');
+      }
     });
 
     // without the sequelize association (explicit queries)
-    // models.User.findOne({
-    //   where: {
-    //     username: req.params.username,
-    //   }
-    // }).then((user) => {
-    //   models.Post.findOne({
-    //     where: {
-    //       userId: user.id,
-    //       slug: req.params.slug,
-    //     }
-    //   }).then((post) =>
-    //     (post ? res.render('posts/single', { post, user }) : res.redirect('/posts'))
-    //   );
-    // });
+    /*
+    models.User.findOne({
+      where: {
+        username: req.params.username,
+      },
+    }).then((user) => {
+      models.Post.findOne({
+        where: {
+          userId: user.id,
+          slug: req.params.slug,
+        },
+      }).then((post) => {
+        if (post) {
+          res.render('posts/single', { post, user });
+        } else {
+          res.redirect('/posts');
+        }
+      });
+    });
+    */
   },
   edit(req, res) {
     models.Post.findOne({
@@ -108,29 +123,36 @@ module.exports = {
           username: req.params.username,
         },
       }],
-    }).then((post) =>
-      (post ? res.render('posts/edit', { post }) : res.redirect('/posts'))
-    );
+    }).then((post) => {
+      if (post) {
+        res.render('posts/edit', { post });
+      } else {
+        res.redirect('/posts');
+      }
+    });
   },
   update(req, res) {
-    models.Post.update({
-      title: req.body.title.toLowerCase(),
-      slug: getSlug(req.body.title.toLowerCase()),
-      body: req.body.body,
-    },
-    {
-      where: {
-        slug: req.params.slug,
+    models.Post.update(
+      {
+        title: req.body.title.toLowerCase(),
+        slug: getSlug(req.body.title.toLowerCase()),
+        body: req.body.body,
       },
-      include: [{
-        model: models.User,
+      {
         where: {
-          username: req.params.username,
+          slug: req.params.slug,
         },
-      }],
-      returning: true,
-    }).then(([numRows, rows]) => {
-      const post = rows[0];
+        include: [{
+          model: models.User,
+          where: {
+            username: req.params.username,
+          },
+        }],
+        returning: true,
+      },
+    ).then((result) => {
+      // result contains [numRowsUpdated, rows]
+      const post = result[1][0];
       res.redirect(`/posts/${req.user.username}/${post.slug}`);
     });
   },

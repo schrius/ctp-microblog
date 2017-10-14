@@ -25,8 +25,8 @@ module.exports = {
         model: models.Post,
       }],
     }).then((user) => {
-      if(user) {
-        res.render('users/single', { user: user, allPosts: user.posts });
+      if (user) {
+        res.render('users/single', { user, allPosts: user.posts });
       } else {
         res.redirect('/users');
       }

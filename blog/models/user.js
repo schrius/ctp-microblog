@@ -47,17 +47,16 @@ module.exports = (sequelize, DataTypes) => {
 
   User.associate = (models) => {
     models.User.hasMany(models.Post);
-  }
+  };
 
-  User.beforeCreate((user) =>
+  User.beforeCreate(user =>
     new sequelize.Promise((resolve) => {
       bcrypt.hash(user.password, null, null, (err, hashedPassword) => {
         resolve(hashedPassword);
       });
     }).then((hashedPw) => {
       user.password_hash = hashedPw;
-    })
-  );
+    }));
 
   return User;
 };

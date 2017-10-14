@@ -21,9 +21,9 @@ module.exports = {
       email: req.body.email,
       password: req.body.password,
     }).then((user) => {
-      req.login(user, () =>
-        res.redirect('/profile')
-      );
+      req.login(user, () => {
+        res.redirect('/profile');
+      });
     }).catch(() => {
       res.render('sign-up');
     });

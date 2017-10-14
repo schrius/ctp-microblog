@@ -7,7 +7,7 @@ const flash = require('connect-flash');
 const methodOverride = require('method-override');
 const models = require('./models/');
 const passport = require('./middlewares/authentication');
-const viewHelpers = require('./middlewares/viewHelpers')
+const viewHelpers = require('./middlewares/viewHelpers');
 
 const app = express();
 app.use(methodOverride('_method'));

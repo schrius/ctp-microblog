@@ -1,12 +1,12 @@
 const redirect = {};
 
-redirect.ifLoggedIn = (route) =>
+redirect.ifLoggedIn = (route = '/profile') =>
   (req, res, next) => (req.user ? res.redirect(route) : next());
 
 redirect.ifNotLoggedIn = (route = '/login') =>
   (req, res, next) => (req.user ? next() : res.redirect(route));
 
-redirect.ifNotAuthorized = (route) =>
+redirect.ifNotAuthorized = (route = '/profile') =>
   (req, res, next) => (req.user.username !== req.params.username ? res.redirect(route) : next());
 
 module.exports = redirect;
